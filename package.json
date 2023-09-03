@@ -1,8 +1,8 @@
 {
-  "name": "my-module",
+  "name": "nuxt-fluree",
   "version": "1.0.0",
   "description": "My new Nuxt module",
-  "repository": "your-org/my-module",
+  "repository": "totalperspective/nuxt-fluree",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -41,10 +41,19 @@
     "@types/node": "^18.17.3",
     "changelogen": "^0.5.4",
     "eslint": "^8.46.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^14.0.1",
     "nuxt": "^3.7.0",
     "vitest": "^0.33.0"
   },
   "overrides": {
     "vue": "latest"
+  },
+  "lint-staged": {
+    "*.{ts,vue}": [
+      "eslint --fix"
+    ]
   }
 }
