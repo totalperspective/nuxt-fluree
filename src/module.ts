@@ -9,7 +9,10 @@ export default defineNuxtModule<ModuleOptions>({
     configKey: 'fluree',
   },
   // Default configuration options of the Nuxt module
-  defaults: {},
+  defaults: {
+    server: 'http://localhost:8090',
+    ledger: 'test/ledger',
+  },
   setup(options, nuxt) {
     const resolver = createResolver(import.meta.url)
 
