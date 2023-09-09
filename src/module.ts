@@ -1,22 +1,39 @@
-import { defineNuxtModule, addPlugin, createResolver } from '@nuxt/kit'
+import { defineNuxtModule, addPlugin, createResolver, addImportsDir, addServerHandler } from '@nuxt/kit'
+import { defu } from 'defu'
 
 // Module options TypeScript interface definition
-export interface ModuleOptions {}
+export interface ModuleOptions {
+  server: string
+  ledger: string
+}
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
-    name: 'fluree',
+    name: '@totalperspective/fluree',
     configKey: 'fluree',
   },
   // Default configuration options of the Nuxt module
   defaults: {
-    server: 'http://localhost:8090',
+    server: 'http://127.0.0.1:8090',
     ledger: 'test/ledger',
   },
   setup(options, nuxt) {
-    const resolver = createResolver(import.meta.url)
+    // Default runtimeConfig
+    nuxt.options.runtimeConfig.public.fluree = defu(nuxt.options.runtimeConfig.public.fluree, options)
+    nuxt.options.runtimeConfig.fluree = defu(nuxt.options.runtimeConfig.fluree, options)
 
-    // Do not add the extension since the `.ts` will be transpiled to `.mjs` after `npm run prepack`
-    addPlugin(resolver.resolve('./runtime/plugin'))
+    const { resolve } = createResolver(import.meta.url)
+
+    // Transpile runtime
+    const runtimeDir = resolve('runtime')
+    nuxt.options.build.transpile.push(runtimeDir)
+
+    // addPlugin(resolve(runtimeDir, 'plugin'))
+    addImportsDir(resolve(runtimeDir, 'composables'))
+
+    addServerHandler({
+      route: '/api/_fluree/exec',
+      handler: resolve(runtimeDir, 'server/api/exec.post'),
+    })
   },
 })
