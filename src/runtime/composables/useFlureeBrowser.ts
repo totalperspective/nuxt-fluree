@@ -1,7 +1,9 @@
-import { useFetch, toRaw } from '#imports'
+import { useFetch, toRaw, ref, isRef } from '#imports'
 import type { ModuleOptions } from '../../module'
 
 let conn: any = undefined
+
+const fromRef = (r: any) => (isRef(r) ? r.value : r)
 
 export async function useFlureeBrowser(config: ModuleOptions): Promise<FlureeImpl> {
   await import('@fluree/flureedb')
@@ -16,10 +18,16 @@ export async function useFlureeBrowser(config: ModuleOptions): Promise<FlureeImp
 
   const db = async () => flureedb.db(conn, ledger)
 
-  const query = async (db: Object, query: Object) => flureedb.query(db, query)
+  const query = async (db: Object, query: Object) => {
+    const result = await flureedb.query(db, query)
+    if (result?.name === 'Error') {
+      throw new Error(result.message)
+    }
+    return result
+  }
 
   const viaServer = async (fn: String, args: Array<any>) => {
-    console.log('fluree-browser', [fn, args])
+    console.log('fluree-browser', 'viaServer', [fn, args])
 
     const { data, error } = await useFetch('/api/_fluree/exec', {
       headers: { 'Content-type': 'application/json' },
@@ -28,7 +36,7 @@ export async function useFlureeBrowser(config: ModuleOptions): Promise<FlureeImp
     })
 
     if (!error.value) {
-      console.log('fluree-browser', toRaw(data))
+      console.log('fluree-browser', 'viaServer', data)
       return data
     }
     const err = toRaw(error)
@@ -38,8 +46,24 @@ export async function useFlureeBrowser(config: ModuleOptions): Promise<FlureeImp
 
   const makeServerFn =
     (fn: String) =>
-    async (...args: Array<any>) =>
-      await viaServer(fn, args)
+    async (...args: Array<any>) => {
+      const result = await viaServer(fn, args)
+      const data: SuccesWithTx = fromRef(result)
+      if (data?.status && data?.result) {
+        return await flureedb.monitor_tx(conn, ledger, data.result, 10000)
+      }
+      return result
+    }
+
+  const event = ref({})
+  const listenerKey = '$useFlureeBrowser$event'
+  flureedb.close_listener(conn, ledger, listenerKey)
+  const listen = flureedb.listen(conn, ledger, listenerKey, (type: Object, data: Object) => {
+    console.log('fluree-browser', 'event', { type, data })
+
+    event.value = { type, data }
+  })
+  console.log('fluree-browser', 'listen?', listen)
 
   return {
     db,
@@ -47,5 +71,6 @@ export async function useFlureeBrowser(config: ModuleOptions): Promise<FlureeImp
     transact: makeServerFn('transact'),
     ledgerList: makeServerFn('ledgerList'),
     newLedger: makeServerFn('newLedger'),
+    event,
   }
 }

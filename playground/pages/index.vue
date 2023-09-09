@@ -1,23 +1,23 @@
 <script setup>
-import { useFluree, useRuntimeConfig, ref, isRef, watch, effectScope, toRaw } from '#imports'
+import { ref, isRef, watch, effectScope, toRaw, computed, useNuxtApp, useRuntimeConfig } from '#imports'
 
 const { fluree: config } = useRuntimeConfig().public
-const fluree = await useFluree(config)
 
-const ledgers = ref()
+const { $fluree } = useNuxtApp()
+const ledgers = ref([])
 async function refeshLedgers() {
   const scope = effectScope()
 
   scope.run(async () => {
-    const list = await fluree.ledgerList()
+    const list = await $fluree.ledgerList()
     if (!isRef(list)) {
-      console.log('refeshLedgers', list)
+      console.log('refeshLedgers=', list?.length)
       ledgers.value = list || []
       return
     }
     watch(list, (value) => {
       const list = toRaw(value)
-      console.log('refeshLedgers', list)
+      console.log('refeshLedgers=', list?.length)
       ledgers.value = list || []
     })
   })
@@ -25,7 +25,7 @@ async function refeshLedgers() {
 
 async function createDefaultLedger() {
   try {
-    const result = await fluree.newLedger(config.ledger)
+    const result = await $fluree.newLedger(config.ledger)
     console.log('createDefaultLedger', result)
     await refeshLedgers()
   } catch (err) {
@@ -35,17 +35,28 @@ async function createDefaultLedger() {
 
 await refeshLedgers()
 
-// const db = fluree.db()
-// const result = await fluree.query(db, {
-//   select: ['*'],
-//   from: '_collection',
-// })
+const colls = ref([])
 
-// console.log(result)
+watch(ledgers, async (ledgers) => {
+  console.log('ledger count', ledgers.length)
+  if (!ledgers.length) {
+    return
+  }
+  const db = await $fluree.db()
+  const result = await $fluree.query(db, {
+    select: ['*'],
+    from: '_collection',
+  })
+  console.log('query result', result.length)
+  colls.value = result
+})
+
+const eventString = computed(() => JSON.stringify($fluree?.event?.value, null, 2))
 </script>
 <template>
   <div>
     <h1>Nuxt Fluree</h1>
+    <textarea v-model="eventString" disabled></textarea>
     <section>
       <h2>Config</h2>
       <table>
@@ -62,6 +73,12 @@ await refeshLedgers()
       <button @click="createDefaultLedger()">Create Default Ledger</button>
       <ul>
         <li v-for="[network, ledger] in ledgers" :key="network + '_' + ledger">{{ network }}/{{ ledger }}</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Collections</h2>
+      <ul>
+        <li v-for="coll in colls" :key="coll">{{ coll }}</li>
       </ul>
     </section>
   </div>

@@ -7,6 +7,9 @@ interface FlureeDb {
   connect: Function
   query: Function
   db: Function
+  listen: Function
+  monitor_tx: Function
+  close_listener: Function
 }
 
 interface FlureeImpl {
@@ -15,8 +18,14 @@ interface FlureeImpl {
   transact: Function
   ledgerList: Function
   newLedger: Function
+  event?: Ref<Object>
 }
 
 interface Win extends Window {
   flureedb: FlureeDb
+}
+
+interface SuccesWithTx {
+  status: Number
+  result: String
 }

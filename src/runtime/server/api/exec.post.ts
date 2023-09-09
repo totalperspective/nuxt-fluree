@@ -6,6 +6,9 @@ export default defineEventHandler(async (event) => {
   const { fluree: config } = useRuntimeConfig()
   const { fn, args } = await readBody(event)
   const fluree = await useFluree(config)
+  console.log('fluree/exec', { fn, args })
 
-  return await fluree[fn](...args)
+  const result = await fluree[fn](...args)
+  console.log('fluree/exec', result)
+  return result
 })

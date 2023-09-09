@@ -13,15 +13,21 @@ export async function useFlureeNode(config: ModuleOptions): Promise<FlureeImpl> 
 
   console.log('fluree-node', 'connected')
 
-  const ledgerList = async () => await flureenjs.ledgerList(await conn)
+  const ledgerList = async () => await flureenjs.ledgerList(conn)
 
-  const newLedger = async (ledger: String, options: unknown) => await flureenjs.newLedger(await conn, ledger, options)
+  const newLedger = async (ledger: String, options: unknown) => await flureenjs.newLedger(conn, ledger, options)
 
-  const db = async () => await flureenjs.db(await conn, ledger)
+  const db = async () => await flureenjs.db(conn, ledger)
 
-  const query = async (db: Object, query: Object) => await flureenjs.query(await db, query)
+  const query = async (db: Object, query: Object) => {
+    const result = await flureenjs.query(db, query)
+    if (result?.name === 'Error') {
+      throw new Error(result.message)
+    }
+    return result
+  }
 
-  const transact = async (tx: Object) => await flureenjs.transact(await conn, ledger, tx)
+  const transact = async (tx: Object) => await flureenjs.transact(conn, ledger, tx)
 
   return { db, query, transact, ledgerList, newLedger }
 }

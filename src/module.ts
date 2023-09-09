@@ -35,5 +35,7 @@ export default defineNuxtModule<ModuleOptions>({
       route: '/api/_fluree/exec',
       handler: resolve(runtimeDir, 'server/api/exec.post'),
     })
+
+    addPlugin(resolve(runtimeDir, 'plugin'))
   },
 })
