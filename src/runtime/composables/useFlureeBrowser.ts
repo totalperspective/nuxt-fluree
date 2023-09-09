@@ -1,27 +1,7 @@
-import { useFetch, toRaw, effectScope, isRef, watch } from '#imports'
+import { useFetch, toRaw } from '#imports'
 import type { ModuleOptions } from '../../module'
 
 let conn: any = undefined
-
-function toPromise(value: unknown) {
-  console.log('+toPromise', { value })
-  return new Promise((resolve, reject) => {
-    try {
-      if (!isRef(value)) {
-        console.log('-toPromise', { value })
-        return resolve(value)
-      }
-      effectScope().run(() => {
-        watch(value, (result) => {
-          console.log('-toPromise', { result })
-          resolve(result)
-        })
-      })
-    } catch (err) {
-      reject(err)
-    }
-  })
-}
 
 export async function useFlureeBrowser(config: ModuleOptions): Promise<FlureeImpl> {
   await import('@fluree/flureedb')
