@@ -1,31 +1,37 @@
-// import type { Ref } from 'vue'
-declare module '@fluree/flureedb'
-declare module '@fluree/flureenjs'
+import type { DbSource, TxOpts, LedgerOpts } from './@fluree/api'
+import type { Query } from './@fluree/query'
+import type { Tx } from './@fluree/tx'
 
-interface FlureeDb {
-  connect_p: Function
-  connect: Function
-  query: Function
-  db: Function
-  listen: Function
-  monitor_tx: Function
-  close_listener: Function
+type DbFn = () => Promise<DbSource>
+
+type QueryFn = (db: DbSource, query: Query) => Promise<object | object[]>
+
+export type TransactFn = (tx: Tx, opts?: TxOpts) => Promise<TxResult>
+
+export type LedgerList = string[]
+
+export type LedgerListFn = () => Promise<LedgerList>
+
+export type NewLedgerFn = (ledger: string, opets?: LedgerOpts) => Promose<TxResult>
+
+export interface FlureeImpl {
+  db: DbFn
+  query: QueryFn
+  transact: TransactFn
+  ledgerList: LedgerListFn
+  newLedger: NewLedgerFn
+  event?: unknown
+}
+interface PluginsInjections {
+  $fluree: FlureeImpl
 }
 
-interface FlureeImpl {
-  db: Function
-  query: Function
-  transact: Function
-  ledgerList: Function
-  newLedger: Function
-  event?: Ref<object>
+declare global {
+  interface NuxtApp extends PluginsInjections {}
 }
 
-interface Win extends Window {
-  flureedb: FlureeDb
-}
-
-interface SuccesWithTx {
-  status: number
-  result: string
+// Module options TypeScript interface definition
+export interface ModuleOptions {
+  server: string
+  ledger: string
 }

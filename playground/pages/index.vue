@@ -1,26 +1,16 @@
-<script setup>
-import { ref, isRef, watch, effectScope, toRaw, computed, useNuxtApp, useRuntimeConfig } from '#imports'
+<script setup lang="ts">
+import { ref, watch, computed, useNuxtApp, useRuntimeConfig, Ref, onMounted } from '#imports'
+import { ModuleOptions } from '~/../src/types'
 
-const { fluree: config } = useRuntimeConfig().public
+const config = useRuntimeConfig().public.fluree as ModuleOptions
 
 const { $fluree } = useNuxtApp()
-const ledgers = ref([])
-async function refeshLedgers() {
-  const scope = effectScope()
+const ledgers: Ref<string[]> = ref([])
 
-  scope.run(async () => {
-    const list = await $fluree.ledgerList()
-    if (!isRef(list)) {
-      console.log('refeshLedgers=', list?.length)
-      ledgers.value = list || []
-      return
-    }
-    watch(list, (value) => {
-      const list = toRaw(value)
-      console.log('refeshLedgers=', list?.length)
-      ledgers.value = list || []
-    })
-  })
+async function refeshLedgers() {
+  const list = await $fluree.ledgerList()
+  console.log('refeshLedgers=', list.length)
+  ledgers.value = list
 }
 
 async function createDefaultLedger() {
@@ -33,9 +23,7 @@ async function createDefaultLedger() {
   }
 }
 
-await refeshLedgers()
-
-const colls = ref([])
+const colls: Ref<any[]> = ref([])
 
 watch(ledgers, async (ledgers) => {
   console.log('ledger count', ledgers.length)
@@ -43,15 +31,27 @@ watch(ledgers, async (ledgers) => {
     return
   }
   const db = await $fluree.db()
-  const result = await $fluree.query(db, {
+  console.log('db', db)
+  const result = (await $fluree.query(db, {
     select: ['*'],
     from: '_collection',
-  })
+  })) as object[]
+
   console.log('query result', result.length)
   colls.value = result
 })
 
-const eventString = computed(() => JSON.stringify($fluree?.event?.value, null, 2))
+onMounted(() => {
+  return refeshLedgers()
+})
+
+const eventString = computed(() => {
+  const event = $fluree?.event as Ref<unknown>
+  if (!event) {
+    return ''
+  }
+  return JSON.stringify(event.value, null, 2)
+})
 </script>
 <template>
   <div>

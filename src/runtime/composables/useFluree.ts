@@ -1,4 +1,5 @@
 import type { ModuleOptions } from '../../module'
+import type { FlureeImpl } from '../../types'
 
 export async function useFluree(config: ModuleOptions): Promise<FlureeImpl> {
   if (process.server) {

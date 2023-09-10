@@ -1,25 +1,25 @@
-import { useFetch, toRaw, ref, isRef } from '#imports'
-import type { ModuleOptions } from '../../module'
+import axios from 'axios'
+import type { FlureeImpl, TransactFn, NewLedgerFn, QueryFn, DbFn, LedgerListFn, ModuleOptions } from '../../types'
+import type { Conn, QueryError, TxResult } from '../../types/@fluree/api'
+import { ref } from '#imports'
 
-let conn: any = undefined
-
-const fromRef = (r: any) => (isRef(r) ? r.value : r)
+let conn: Conn
 
 export async function useFlureeBrowser(config: ModuleOptions): Promise<FlureeImpl> {
   await import('@fluree/flureedb')
-  const { flureedb } = window as unknown as Win
+  const { flureedb } = window
   const { server, ledger } = config
 
   if (!conn) {
     console.log('fluree-browser', [server, ledger])
     conn = flureedb.connect(server)
+    console.log('fluree-browser', 'Connected!')
   }
-  console.log('fluree-browser', 'Connected!')
 
-  const db = async () => flureedb.db(conn, ledger)
+  const db: DbFn = async () => await flureedb.db(conn, ledger)
 
-  const query = async (db: Object, query: Object) => {
-    const result = await flureedb.query(db, query)
+  const query: QueryFn = async (db, query) => {
+    const result = (await flureedb.query(db, query)) as QueryError
     if (result?.name === 'Error') {
       throw new Error(result.message)
     }
@@ -28,27 +28,22 @@ export async function useFlureeBrowser(config: ModuleOptions): Promise<FlureeImp
 
   const viaServer = async (fn: String, args: Array<any>) => {
     console.log('fluree-browser', 'viaServer', [fn, args])
-
-    const { data, error } = await useFetch('/api/_fluree/exec', {
-      headers: { 'Content-type': 'application/json' },
-      method: 'POST',
-      body: { fn, args },
+    const response = await axios({
+      method: 'post',
+      url: '/api/_fluree/exec',
+      data: { fn, args },
     })
-
-    if (!error.value) {
-      console.log('fluree-browser', 'viaServer', data)
-      return data
-    }
-    const err = toRaw(error)
-    console.error(err)
-    throw err
+    console.log('fluree-browser', 'viaServer', response)
+    return response.data
   }
 
   const makeServerFn =
     (fn: String) =>
     async (...args: Array<any>) => {
       const result = await viaServer(fn, args)
-      const data: SuccesWithTx = fromRef(result)
+      console.log('fromServer', result)
+
+      const data: TxResult = result
       if (data?.status && data?.result) {
         return await flureedb.monitor_tx(conn, ledger, data.result, 10000)
       }
@@ -68,9 +63,9 @@ export async function useFlureeBrowser(config: ModuleOptions): Promise<FlureeImp
   return {
     db,
     query,
-    transact: makeServerFn('transact'),
-    ledgerList: makeServerFn('ledgerList'),
-    newLedger: makeServerFn('newLedger'),
+    transact: makeServerFn('transact') as TransactFn,
+    ledgerList: makeServerFn('ledgerList') as LedgerListFn,
+    newLedger: makeServerFn('newLedger') as NewLedgerFn,
     event,
   }
 }

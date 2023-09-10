@@ -31,6 +31,7 @@
     "@fluree/flureedb": "^2.0.3",
     "@fluree/flureenjs": "^2.0.3",
     "@nuxt/kit": "^3.7.0",
+    "axios": "^1.5.0",
     "typescript": "^5.2.2"
   },
   "devDependencies": {
@@ -39,6 +40,7 @@
     "@nuxt/module-builder": "^0.4.0",
     "@nuxt/schema": "^3.7.0",
     "@nuxt/test-utils": "^3.7.0",
+    "@nuxtjs/eslint-config-typescript": "^12.1.0",
     "@types/node": "^18.17.3",
     "changelogen": "^0.5.4",
     "defu": "^6.1.2",

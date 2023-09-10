@@ -1,18 +1,31 @@
-type MultiQuery = {
-  [id: String]: Query
+import type { Multi, Id } from './schema'
+
+export type MultiQuery = {
+  [id: string]: Query
 }
 
-type Query = BasicQuery | AnalyticalQuery | BlockQuery | HistoryQuery
+export type Query = BasicSelectQuery | AnalyticalSelectQuery | BlockQuery | HistoryQuery
+
+interface BasicSelect extends BasicQuery {
+  select: SelectArray
+}
+
+interface BasicSelectOne extends BasicQuery {
+  selectOne: SelectArray
+}
+
+interface BasicSelectDistinct extends BasicQuery {
+  selectDistinct: SelectArray
+}
+
+type BasicSelectQuery = BasicSelect | BasicSelectOne | BasicSelectDistinct
 
 interface BasicQuery {
-  [SelectKey]: SelectArray
   from?: Multi<Id>
   where?: Where[]
   block?: BlockRef
   opts?: BasicQueryOpts
 }
-
-type SelectKey = 'select' | 'selectOne' | 'selectDistinct'
 
 type SelectArray = Predicate[]
 type Predicate = '*' | string | PredicateMap | SubSelectOptions
@@ -44,15 +57,28 @@ interface CommonQueryOpts {
   orderBy?: Order
 }
 
-interface BasicQueryOpts extends CommonQueryOpts {
+interface AnalyticalQueryOpts extends CommonQueryOpts {
   component?: boolean
   compact?: boolean
   syncTo?: number
   syncTimout?: number
 }
 
+interface AnalyticalSelect extends AnalyticalQuery {
+  select: SelectArray
+}
+
+interface AnalyticalSelectOne extends AnalyticalQuery {
+  selectOne: SelectArray
+}
+
+interface AnalyticalSelectDistinct extends AnalyticalQuery {
+  selectDistinct: SelectArray
+}
+
+type AnalyticalSelectQuery = AnalyticalSelect | AnalyticalSelectOne | AnalyticalSelectDistinct
+
 interface AnalyticalQuery {
-  [SelectKey]: Multi<SelectItem>
   where: Clause[]
   block?: BlockRef
   prefixes?: PrefixMap
@@ -125,18 +151,18 @@ interface WikidataOpts {
 }
 
 interface BlockQuery {
-  block: Multi<number> | String
+  block: Multi<number> | string
   prettyPrint?: boolean
 }
 
 interface HistoryQuery {
-  history: Number | TwoTuple | FlakeFormat
+  history: number | TwoTuple | FlakeFormat
   block?: Multi<number>
   showAuth?: boolean
   auth?: AuthRef[]
   prettyPrint?: boolean
 }
 
-type FlakeFormat = [Id, String?, PredicateValue?] | [Id | null, String, PredicateValue?]
+type FlakeFormat = [Id, string?, PredicateValue?] | [Id | null, string, PredicateValue?]
 
-type AuthRef = Number | String
+type AuthRef = number | string

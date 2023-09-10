@@ -1,6 +1,6 @@
+import { ModuleOptions } from '../types'
 import { defineNuxtPlugin } from '#app'
 import { useFluree, useRuntimeConfig } from '#imports'
-import { ModuleOptions } from '../module'
 
 export default defineNuxtPlugin({
   name: 'fluree-plugin',

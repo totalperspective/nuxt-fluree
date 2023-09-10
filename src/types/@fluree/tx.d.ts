@@ -1,15 +1,18 @@
+import type { Auth, Collection, Entity, Predicate, Role, Rule, User } from './schema'
+
 enum AssertAction {
   Add = 'add',
   Update = 'update',
   Upsert = 'upsert',
 }
+
 enum RetractAction {
   Delete = 'delete',
 }
 
 type Action = AssertAction | RetractAction
 
-interface TransactKey extends Fluree.Entity {
+interface TransactKey extends Entity {
   _action?: Action
 }
 

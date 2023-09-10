@@ -1,11 +1,6 @@
 import { defineNuxtModule, addPlugin, createResolver, addImportsDir, addServerHandler } from '@nuxt/kit'
 import { defu } from 'defu'
-
-// Module options TypeScript interface definition
-export interface ModuleOptions {
-  server: string
-  ledger: string
-}
+import { ModuleOptions } from './types'
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
@@ -19,8 +14,8 @@ export default defineNuxtModule<ModuleOptions>({
   },
   setup(options, nuxt) {
     // Default runtimeConfig
-    nuxt.options.runtimeConfig.public.fluree = defu(nuxt.options.runtimeConfig.public.fluree, options)
-    nuxt.options.runtimeConfig.fluree = defu(nuxt.options.runtimeConfig.fluree, options)
+    nuxt.options.runtimeConfig.public.fluree = defu(nuxt.options.runtimeConfig.public.fluree as ModuleOptions, options)
+    nuxt.options.runtimeConfig.fluree = defu(nuxt.options.runtimeConfig.fluree as ModuleOptions, options)
 
     const { resolve } = createResolver(import.meta.url)
 
@@ -28,6 +23,7 @@ export default defineNuxtModule<ModuleOptions>({
     const runtimeDir = resolve('runtime')
     nuxt.options.build.transpile.push(runtimeDir)
 
+    addPlugin(resolve(runtimeDir, 'plugin'))
     // addPlugin(resolve(runtimeDir, 'plugin'))
     addImportsDir(resolve(runtimeDir, 'composables'))
 
@@ -35,7 +31,5 @@ export default defineNuxtModule<ModuleOptions>({
       route: '/api/_fluree/exec',
       handler: resolve(runtimeDir, 'server/api/exec.post'),
     })
-
-    addPlugin(resolve(runtimeDir, 'plugin'))
   },
 })

@@ -1,23 +1,23 @@
 type Instant = Date
 type Json = object
 
-type TwoTuple = [string, string]
-type Id = number | string | TwoTuple
+export type TwoTuple = [string, string]
+export type Id = number | string | TwoTuple
 
-type Ref = Entity | Id
+export type Ref = Entity | Id
 type RefOrType<Type> = Ref | Type
-type Multi<Type> = RefOrType<Type> | RefOrType<Type>[]
-type PredicateValue = string | number | Buffer | object | bigint | EntityMap
+export type Multi<Type> = RefOrType<Type> | RefOrType<Type>[]
+export type PredicateValue = string | number | Buffer | object | bigint | EntityMap
 
-interface Entity {
+export interface Entity {
   _id: Id
 }
 
-type EntityMap = Entity & {
+export type EntityMap = Entity & {
   [key: string]: Multi<PredicateValue>
 }
 
-interface Collection extends Entity {
+export interface Collection extends Entity {
   name: string
   doc?: string
   spec?: Multi<Fn>
@@ -26,7 +26,7 @@ interface Collection extends Entity {
   predicates: Multi<Predicate>
 }
 
-enum PredicateType {
+export enum PredicateType {
   string = 'string',
   Ref = 'ref',
   Tag = 'tag',
@@ -44,7 +44,7 @@ enum PredicateType {
   Json = 'json',
 }
 
-interface Predicate extends Entity {
+export interface Predicate extends Entity {
   collection: Collection
   name: string
   type: string
@@ -67,13 +67,13 @@ interface Predicate extends Entity {
   retractDuplicates?: boolean
 }
 
-interface User extends Entity {
+export interface User extends Entity {
   username?: string
   auth?: Multi<Auth>
   roles?: Multi<Role>
 }
 
-interface Auth extends Entity {
+export interface Auth extends Entity {
   id?: string
   doc?: string
   key?: string
@@ -86,13 +86,13 @@ interface Auth extends Entity {
   fuel: number
 }
 
-interface Role extends Entity {
+export interface Role extends Entity {
   id?: string
   doc?: string
   rule?: Multi<Rule>
 }
 
-interface Rule extends Entity {
+export interface Rule extends Entity {
   id?: string
   doc?: string
   collection: string
@@ -103,7 +103,7 @@ interface Rule extends Entity {
   errorMessage?: string
 }
 
-interface Fn extends Entity {
+export interface Fn extends Entity {
   name: string
   params?: Multi<string>
   code: string
@@ -112,7 +112,7 @@ interface Fn extends Entity {
   // spec?: Map<string, Spec>
 }
 
-interface Block extends Entity {
+export interface Block extends Entity {
   number: number
   hash: string
   prevHash: string
@@ -122,7 +122,7 @@ interface Block extends Entity {
   sigs: string[]
 }
 
-interface Tx extends Entity {
+export interface Tx extends Entity {
   tempids: Map<string, number[]>
   sig: string
   tx: Json
@@ -133,12 +133,12 @@ interface Tx extends Entity {
   auth: Auth
 }
 
-interface Tag extends Entity {
+export interface Tag extends Entity {
   id: string
   doc?: string
 }
 
-interface Setting extends Entity {
+export interface Setting extends Entity {
   id: string
   doc?: string
   language: Lang
@@ -148,7 +148,7 @@ interface Setting extends Entity {
   ledgers: Auth[]
 }
 
-enum Lang {
+export enum Lang {
   Arabic = 'ar',
   Bengali = 'bn',
   Chinese = 'cn',
