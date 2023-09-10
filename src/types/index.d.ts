@@ -18,7 +18,7 @@ interface FlureeImpl {
   transact: Function
   ledgerList: Function
   newLedger: Function
-  event?: Ref<Object>
+  event?: Ref<object>
 }
 
 interface Win extends Window {
@@ -26,6 +26,6 @@ interface Win extends Window {
 }
 
 interface SuccesWithTx {
-  status: Number
-  result: String
+  status: number
+  result: string
 }
